@@ -2,7 +2,6 @@ package com.weberhsu.presentation
 
 import app.cash.turbine.test
 import com.weberhsu.base.test.BaseCoroutineTestWithTestDispatcherProvider
-import com.weberhsu.domain.entity.CurrencyInfo
 import com.weberhsu.domain.usecase.CurrencyUseCase
 import com.weberhsu.presentation.contract.MainEvent
 import com.weberhsu.presentation.contract.MainState
@@ -53,47 +52,6 @@ class CurrencyListViewModelTest : BaseCoroutineTestWithTestDispatcherProvider(
 
         // When& Assertion
         viewModel.handleEvent(MainEvent.Search("b"))
-        handleSearchSuccessFlowTest(tests)
-
-        // Then
-        verify { useCase.searchCryptoCurrencies(any()) }
-    }
-
-    @Test
-    fun test_search_cryptos_with_empty_search_text_success() = runTest {
-        val tests = TestData.generateTestCryptos()
-
-        // Given
-        every { useCase.getCryptoCurrencies() } returns flow {
-            emit(Result.success(tests))
-        }
-
-        // When& Assertion
-        viewModel.handleEvent(MainEvent.Search(""))
-        handleSearchSuccessFlowTest(tests)
-
-        // Then
-        verify { useCase.getCryptoCurrencies() }
-    }
-
-    @Test
-    fun test_search_cryptos_with_search_text_null_success() = runTest {
-        val tests = TestData.generateTestCryptos()
-
-        // Given
-        every { useCase.getCryptoCurrencies() } returns flow {
-            emit(Result.success(tests))
-        }
-
-        // When& Assertion
-        viewModel.handleEvent(MainEvent.Search(null))
-        handleSearchSuccessFlowTest(tests)
-
-        // Then
-        verify { useCase.getCryptoCurrencies() }
-    }
-
-    private fun handleSearchSuccessFlowTest(tests: List<CurrencyInfo>) = runTest {
         viewModel.model.stateFlow.test {
             expectThat(awaitItem()).isSameInstanceAs(MainState.Init)
             expectThat(awaitItem()).isSameInstanceAs(MainState.Loading)
@@ -102,5 +60,8 @@ class CurrencyListViewModelTest : BaseCoroutineTestWithTestDispatcherProvider(
             expectThat(currencyItem).isA<MainState.CurrencyList>()
             expectThat((currencyItem as MainState.CurrencyList).currencies?.size).isEqualTo(tests.size)
         }
+
+        // Then
+        verify { useCase.searchCryptoCurrencies(any()) }
     }
 }

@@ -13,7 +13,9 @@ import com.weberhsu.presentation.contract.MainState
 import com.weberhsu.presentation.contract.stateMachine
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -69,7 +71,6 @@ class CurrencyListViewModel @Inject constructor(
                 }
 
                 intent {
-                    println(validTransition.toState)
                     state { validTransition.toState }
                 }
             }
@@ -124,24 +125,22 @@ class CurrencyListViewModel @Inject constructor(
         searchJob = null
         lastSearch = text
 
-        searchJob = viewModelScope.launch {
-            handleCurrencyList(
-                if (isShowCrypto) {
-                    if (text?.isNotBlank() == true) {
-                        useCase.searchCryptoCurrencies(text).first()
-                    } else {
-                        useCase.getCryptoCurrencies().first()
-                    }
-                } else {
-                    if (text?.isNotBlank() == true) {
-                        useCase.searchFiatCurrencies(text).first()
-                    } else {
-                        useCase.getFiatCurrencies().first()
-                    }
-                }
-            )
+        searchJob = if (isShowCrypto) {
+            if (text?.isNotBlank() == true) {
+                useCase.searchCryptoCurrencies(text)
+            } else {
+                useCase.getCryptoCurrencies()
+            }
+        } else {
+            if (text?.isNotBlank() == true) {
+                useCase.searchFiatCurrencies(text)
+            } else {
+                useCase.getFiatCurrencies()
+            }
+        }.take(1).onEach {
+            handleCurrencyList(it)
             searchJob = null
-        }
+        }.launchIn(viewModelScope)
     }
 
     private fun Result<Any>.handleResultEvent() {

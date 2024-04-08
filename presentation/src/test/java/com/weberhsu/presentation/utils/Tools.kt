@@ -1,11 +1,17 @@
 package com.weberhsu.presentation.utils
 
 import io.mockk.InternalPlatformDsl
+import io.mockk.mockk
 
 /**
  * author : weber
  * desc :
  */
+
+fun Any.mockCallPrivateFunc(methodName: String, vararg elements: Any): Any? {
+    return InternalPlatformDsl.dynamicCall(this, methodName, elements) { mockk() }
+}
+
 inline fun <reified T : Any, R> T.setPrivateProperty(name: String, value: R) {
     T::class.java.getDeclaredField(name).let {
         it.isAccessible = true
