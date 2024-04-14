@@ -46,6 +46,7 @@ Fiat.
     - Clean Architecture
 
 <p>
+<img src="graphics/clean_architecture_android.png" width="500"/>
 <img src="graphics/architecture.png" width="500"/>
 </p>
 
